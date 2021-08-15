@@ -1,3 +1,4 @@
+
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -9,7 +10,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.browser = QWebEngineView()
-        self.browser.setUrl(QUrl('https://duckduckgo.com/'))
+        self.browser.setUrl(QUrl('file:///home.html'))
         self.setCentralWidget(self.browser)
         self.showMaximized()
 
@@ -24,7 +25,7 @@ class MainWindow(QMainWindow):
         back_btn.triggered.connect(self.browser.back)
         navbar.addAction(back_btn)
 
-        forward_btn = QAction('vittu eteen pöin', self)
+        forward_btn = QAction('vittu eteen päin', self)
         forward_btn.triggered.connect(self.browser.forward)
         navbar.addAction(forward_btn)
 
@@ -43,7 +44,7 @@ class MainWindow(QMainWindow):
         self.browser.urlChanged.connect(self.update_url)
 
     def navigate_home(self):
-        self.browser.setUrl(QUrl('https://duckduckgo.com/'))
+        self.browser.setUrl(QUrl("'file:///home.html"))
 
     def navigate_to_url(self):
         url = self.url_bar.text()
@@ -53,7 +54,10 @@ class MainWindow(QMainWindow):
         self.url_bar.setText(q.toString())
 
 
-app = QApplication(sys.argv)
-QApplication.setApplicationName('uXbowser')
-window = MainWindow()
-app.exec_()
+if "__main__" == __name__:
+   
+    app = QApplication(sys.argv)
+    QApplication.setApplicationName('uXbowser')
+    window = MainWindow()
+    app.exec_()
+
