@@ -3,6 +3,7 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtWebEngineWidgets import *
+from PyQt5.QtGui import *
 from PyQt5 import QtCore, QtGui
 
 
@@ -13,14 +14,17 @@ class MainWindow(QMainWindow):
         self.browser.setUrl(QUrl('file:///home.html'))
         self.setCentralWidget(self.browser)
         self.showMaximized()
-
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.show()
         self.setWindowIcon(QtGui.QIcon("loko.ico"))
         
-
+       
+        
+        
         # navbar
         navbar = QToolBar()
         self.addToolBar(navbar)
-
+        navbar.setStyleSheet("background-color: #35363a; color: white")
         back_btn = QAction('selkä', self)
         back_btn.triggered.connect(self.browser.back)
         navbar.addAction(back_btn)
@@ -44,7 +48,7 @@ class MainWindow(QMainWindow):
         self.browser.urlChanged.connect(self.update_url)
 
     def navigate_home(self):
-        self.browser.setUrl(QUrl("'file:///home.html"))
+        self.browser.setUrl(QUrl("file:///home.html"))
 
     def navigate_to_url(self):
         url = self.url_bar.text()
@@ -54,9 +58,12 @@ class MainWindow(QMainWindow):
         self.url_bar.setText(q.toString())
 
 
+
+
 if "__main__" == __name__:
    
     app = QApplication(sys.argv)
+    app.setStyleSheet("background-color: #333333; color: #333333")
     QApplication.setApplicationName('uXbowser')
     window = MainWindow()
     app.exec_()
