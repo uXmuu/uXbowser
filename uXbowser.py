@@ -1,4 +1,4 @@
-
+import os
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -6,15 +6,15 @@ from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import QtCore, QtGui
 
-
+path = os.getcwd()
+home = "file:///"+path+"/home.html"
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.browser = QWebEngineView()
-        self.browser.setUrl(QUrl('file:///home.html'))
+        self.browser.setUrl(QUrl(home))
         self.setCentralWidget(self.browser)
         self.showMaximized()
-        self.setWindowFlags(Qt.FramelessWindowHint)
         self.show()
         self.setWindowIcon(QtGui.QIcon("loko.ico"))
         
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         self.browser.urlChanged.connect(self.update_url)
 
     def navigate_home(self):
-        self.browser.setUrl(QUrl("file:///home.html"))
+        self.browser.setUrl(QUrl(home))
 
     def navigate_to_url(self):
         url = self.url_bar.text()
