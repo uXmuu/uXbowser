@@ -8,6 +8,8 @@ from PyQt5 import QtCore, QtGui
 
 path = os.getcwd()
 home = "file:///"+path+"/home.html"
+home = home.replace("\\","/")
+home = str(home)
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -67,4 +69,3 @@ if "__main__" == __name__:
     QApplication.setApplicationName('uXbowser')
     window = MainWindow()
     app.exec_()
-
