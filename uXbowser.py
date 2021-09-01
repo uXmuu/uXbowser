@@ -20,6 +20,18 @@ class MainWindow(QMainWindow):
         self.show()
         self.setWindowIcon(QtGui.QIcon("loko.ico"))
         
+        self.shortcut1 = QShortcut(QKeySequence("Ctrl+R"), self)
+        self.shortcut1.activated.connect(self.browser.reload)
+
+        self.shortcut2 = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.shortcut2.activated.connect(self.browser.back)
+
+        self.shortcut3 = QShortcut(QKeySequence("Ctrl+F"), self)
+        self.shortcut3.activated.connect(self.browser.forward)
+
+        self.shortcut4 = QShortcut(QKeySequence("Ctrl+H"), self)
+        self.shortcut4.activated.connect(self.navigate_home)
+        
        
         
         
