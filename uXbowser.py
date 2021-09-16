@@ -5,6 +5,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import QtCore, QtGui
+from threading import Thread
+import requests
+from qtwidgets import Toggle
+from qtwidgets import AnimatedToggle
 
 path = os.getcwd()
 home = "file:///"+path+"/home.html"
@@ -13,6 +17,12 @@ home = str(home)
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
+        
+        
+        packages = requests.get("""https://raw.githubusercontent.com/uXmuu/uXbowser-packages/main/a.txt""").text
+        print(packages)
+
+        
         self.browser = QWebEngineView()
         self.browser.setUrl(QUrl(home))
         self.setCentralWidget(self.browser)
@@ -31,8 +41,9 @@ class MainWindow(QMainWindow):
 
         self.shortcut4 = QShortcut(QKeySequence("Ctrl+H"), self)
         self.shortcut4.activated.connect(self.navigate_home)
-        
-       
+
+
+
         
         
         # navbar
@@ -60,6 +71,22 @@ class MainWindow(QMainWindow):
         navbar.addWidget(self.url_bar)
 
         self.browser.urlChanged.connect(self.update_url)
+        toggle_1 = Toggle()
+        toggle_2 = AnimatedToggle(
+            checked_color="#FFB000",
+            pulse_checked_color="#44FFB000"
+        )
+
+        uXbar = self.menuBar()
+
+        kyllä = uXbar.addMenu("kyllä")
+        
+
+        for i in packages.split("\n"):
+        	self.btn = kyllä.addAction(i)            
+        	text = self.btn.text()
+        	self.btn.triggered.connect(lambda ch, text=text : self.install(text))
+        	#self.btn.addAction(toggle_2)
 
     def navigate_home(self):
         self.browser.setUrl(QUrl(home))
@@ -70,6 +97,21 @@ class MainWindow(QMainWindow):
 
     def update_url(self, q):
         self.url_bar.setText(q.toString())
+    def install(self,a):
+    	file = "https://raw.githubusercontent.com/uXmuu/uXbowser-packages/main/"+a+".py"
+    	o = requests.get(file).text
+    	try:
+    		f = open("packages/"+a+".py","w")
+    	except:
+    		os.system("mkdir packages")
+    		self.install(a)
+    	f.write(o)
+    	print(file)
+
+
+    
+    
+    
 
 
 
@@ -78,6 +120,7 @@ if "__main__" == __name__:
    
     app = QApplication(sys.argv)
     app.setStyleSheet("background-color: #333333; color: #333333")
+    
     QApplication.setApplicationName('uXbowser')
     window = MainWindow()
     app.exec_()
