@@ -92,13 +92,14 @@ class MainWindow(QMainWindow):
 
         uXbar2 = self.menuBar()
         self.ei = uXbar2.addMenu("ei")
-        
-        for i in os.listdir("packages")[:-2]:
-                i = i.replace("__pycache__", "").replace(".py","")
-                self.btn2 = self.ei.addAction(i)
-                text = self.btn2.text()
-                self.btn2.triggered.connect(lambda ch, text=text : Thread(target=lambda: self.use(text)).start())
-        
+        try:
+	        for i in os.listdir("packages")[:-2]:
+	                i = i.replace("__pycache__", "").replace(".py","")
+	                self.btn2 = self.ei.addAction(i)
+	                text = self.btn2.text()
+	                self.btn2.triggered.connect(lambda ch, text=text : Thread(target=lambda: self.use(text)).start())
+        except:
+        	pass
         
         default = self.ei.addAction("default")
         
