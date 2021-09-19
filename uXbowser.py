@@ -107,7 +107,7 @@ class MainWindow(QMainWindow):
         uXbar2 = self.menuBar()
         self.ei = uXbar2.addMenu("ei")
         try:
-	        for i in os.listdir("packages")[:-2]:
+	        for i in os.listdir("packages"):
 	                i = i.replace("__pycache__", "").replace(".py","")
 	                self.btn2 = self.ei.addAction(i)
 	                text = self.btn2.text()
@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
             self.update(aa)
         
         #self.setStyleSheet(f["app_style"])
-    def use(a):
+    def use(self,a):
         sys.path.insert(1,"packages")
         #a = __import__(a)
         os.system("python packages/"+a+".py")
