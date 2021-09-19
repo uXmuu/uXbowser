@@ -4,7 +4,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtGui import *
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWebChannel
+from PyQt5.QtNetwork import *
 from threading import Thread
 import requests
 import json
@@ -14,15 +15,21 @@ path = os.getcwd()
 home = "file:///"+path+"/home.html"
 home = home.replace("\\","/")
 home = str(home)
+
+
+
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         with open("config.json") as f:
             a = json.load(f)
+            f.close()
         
         packages = requests.get("""https://raw.githubusercontent.com/uXmuu/uXbowser-packages/main/a.txt""").text
         default_config = requests.get("https://raw.githubusercontent.com/uXmuu/uXbowser-packages/main/config/config.json").json()
-        print(default_config)
+        
 
         
         self.browser = QWebEngineView()
@@ -68,15 +75,22 @@ class MainWindow(QMainWindow):
         home_btn.triggered.connect(self.navigate_home)
         self.navbar.addAction(home_btn)
 
-        update_button = QAction("ehkä",self)
-        update_button.triggered.connect(lambda aa = json.load(open("config.json")): self.update(aa))
-        self.navbar.addAction(update_button)
+        #update_button = QAction("ehkä",self)
+        #update_button.triggered.connect(lambda aa = json.load(open("config.json")): self.update(aa))
+        #self.navbar.addAction(update_button)
+
+        self.shitscript_btn = QAction("shitscript: on", self)
+        self.shitscript_btn.triggered.connect(lambda: self.disableJS(False))
+        self.navbar.addAction(self.shitscript_btn)
+
 
         self.url_bar = QLineEdit()
         self.url_bar.returnPressed.connect(self.navigate_to_url)
         self.navbar.addWidget(self.url_bar)
 
-        Thread(target=lambda aa = json.load(open("config.json")): self.update(aa)).start()
+
+
+        
         
 
         
@@ -98,16 +112,23 @@ class MainWindow(QMainWindow):
 	                self.btn2 = self.ei.addAction(i)
 	                text = self.btn2.text()
 	                self.btn2.triggered.connect(lambda ch, text=text : Thread(target=lambda: self.use(text)).start())
+
         except:
         	pass
+        with open("config.json") as aa:
+            self.update(aa)
         
-        default = self.ei.addAction("default")
+        #self.setStyleSheet(f["app_style"])
+    def use(a):
+        sys.path.insert(1,"packages")
+        #a = __import__(a)
+        os.system("python packages/"+a+".py")
+
+            
+            #self.browser.page().runJavaScript('document.body.style.color = "white"; document.body.style.color = "yellow"; document.body.style.backgroundColor = "red";')
+                    
         
-        default.triggered.connect(lambda: self.default(default_config))
-        
-    def default(self,a):
-    	with open("config.json","w") as u:
-    		json.dump(a,u)
+    
 
     def navigate_home(self):
         self.browser.setUrl(QUrl(home))
@@ -115,6 +136,7 @@ class MainWindow(QMainWindow):
     def navigate_to_url(self):
         url = self.url_bar.text()
         self.browser.setUrl(QUrl("https://duckduckgo.com/"+url))
+
 
     def update_url(self, q):
         self.url_bar.setText(q.toString())
@@ -124,44 +146,77 @@ class MainWindow(QMainWindow):
         o = requests.get(file).text
         try:
             f = open("packages/"+a+".py","w")
+            f.write(o)
+            f.close()
         except:
-            os.system("mkdir packages")
-            self.install(a)
-        f.write(o)
-        Thread(target=lambda: self.use(a)).start()
+            p = os.system("mkdir packages")
+            if p == 0:
+                self.install(a)
+        
+        #Thread(target=lambda: self.use(a)).start()
+    def userAgentForUrl(self, url):
+
+        return "uXbowser"
 
         
 
 
-    def use(b,a):
-        sys.path.insert(1,"packages")
-        a = __import__(a)
+        
 
     def update(self,a):
-        try:
-            while 1:
-                with open("config.json") as f:
-                    f = json.load(f)
+       
+        with open("config.json") as f:
+            f = json.load(f)
+                
+                
+                        
+        self.setStyleSheet(f["app_style"])
+        self.navbar.setStyleSheet(f["navbar_style"])
+
+    def disableJS(self, a):
+        settings = QWebEngineSettings.globalSettings()
+        o = self.shitscript_btn.text()
+        if not a:
+            print(o)
+            if o == "shitscript: off":
+                self.disableJS(True)
+               
+            else:
+                self.shitscript_btn.setText("shitscript: off")
+                settings.setAttribute(QWebEngineSettings.JavascriptEnabled, False)
+
             
-                if a != f:
-                    self.setStyleSheet(f["app_style"])
-                    self.navbar.setStyleSheet(f["navbar_style"])
-                    time.sleep(5)
-        except:
-            self.update(a)
+        else:
+            self.shitscript_btn.setText("shitscript: on")
+            settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+
+
            
       
 
 if "__main__" == __name__:
     with open("config.json") as f:
         a = json.load(f)
-   
-    app = QApplication(sys.argv)
-    #app.setStyleSheet(a["app_style"])
+    try:
+        app = QApplication(sys.argv)
+        app.setStyleSheet(a["app_style"])
 
-    
-    QApplication.setApplicationName('uXbowser')
-    window = MainWindow()
+        
+        QApplication.setApplicationName('uXbowser')
+        window = MainWindow()
+    except Exception as e:
+        print(e)
+        app.exec_()
+        
+        try:
+            app = QApplication(sys.argv)
+            app.setStyleSheet(a["app_style"])
+
+                
+            QApplication.setApplicationName('uXbowser')
+            window = MainWindow()
+        except:
+            pass
     app.exec_()
 
 
