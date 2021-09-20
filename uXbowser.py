@@ -16,7 +16,12 @@ home = "file:///"+path+"/home.html"
 home = home.replace("\\","/")
 home = str(home)
 
+class Browser(QWebEnginePage):
+    def __init__(self):
+        super(QtWebKit.QWebPage, self).__init__()
 
+    def userAgentForUrl(self, url):
+        return "uXbowser"
 
 
 
@@ -68,7 +73,7 @@ class MainWindow(QMainWindow):
         self.navbar.addAction(forward_btn)
 
         reload_btn = QAction('ei vittu toimi', self)
-        reload_btn.triggered.connect(self.browser.reload)
+        reload_btn.triggered.connect(lambda: self.reload())
         self.navbar.addAction(reload_btn)
 
         home_btn = QAction('koti', self)
@@ -90,6 +95,7 @@ class MainWindow(QMainWindow):
 
 
 
+
         
         
 
@@ -102,7 +108,7 @@ class MainWindow(QMainWindow):
         for i in packages.split("\n")[:-1]:
             self.btn = kyllä.addAction(i)            
             text = self.btn.text()
-            self.btn.triggered.connect(lambda ch, text=text : self.install(text))
+            self.btn.triggered.connect(lambda ch, text=text : Thread(target=lambda: self.install(text)).start())
 
         uXbar2 = self.menuBar()
         self.ei = uXbar2.addMenu("ei")
@@ -119,13 +125,14 @@ class MainWindow(QMainWindow):
             self.update(aa)
         
         #self.setStyleSheet(f["app_style"])
+
     def use(self,a):
         sys.path.insert(1,"packages")
         #a = __import__(a)
         os.system("python packages/"+a+".py")
 
             
-            #self.browser.page().runJavaScript('document.body.style.color = "white"; document.body.style.color = "yellow"; document.body.style.backgroundColor = "red";')
+        #self.browser.page().runJavaScript(f'document.body.style.color = "white"; document.body.style.color = "yellow"; document.body.style.backgroundColor = "red";')
                     
         
     
@@ -172,6 +179,14 @@ class MainWindow(QMainWindow):
                         
         self.setStyleSheet(f["app_style"])
         self.navbar.setStyleSheet(f["navbar_style"])
+
+    def reload(self):
+        aaa = json.load(open("config.json"))
+        self.update(aaa)
+        self.browser.reload
+        self.browser.page().runJavaScript(f'document.body.style.color = "{aaa["body_color"]}";')
+        self.browser.page().runJavaScript(f'document.body.style.backgroundColor = "{aaa["body_background-color"]}";')
+
 
     def disableJS(self, a):
         settings = QWebEngineSettings.globalSettings()
