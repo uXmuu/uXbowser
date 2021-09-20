@@ -108,15 +108,16 @@ class MainWindow(QMainWindow):
         for i in packages.split("\n")[:-1]:
             self.btn = kyllä.addAction(i)            
             text = self.btn.text()
-            self.btn.triggered.connect(lambda ch, text=text : Thread(target=lambda: self.install(text)).start())
+            self.btn.triggered.connect(lambda ch, text=text : self.install(text))
 
         uXbar2 = self.menuBar()
         self.ei = uXbar2.addMenu("ei")
+        self.p_list = []
         try:
 	        for i in os.listdir("packages"):
 	                i = i.replace("__pycache__", "").replace(".py","")
 	                self.btn2 = self.ei.addAction(i)
-	                text = self.btn2.text()
+	                text = self.btn2.text(); self.p_list.append(text)
 	                self.btn2.triggered.connect(lambda ch, text=text : Thread(target=lambda: self.use(text)).start())
 
         except:
@@ -152,10 +153,15 @@ class MainWindow(QMainWindow):
         file = "https://raw.githubusercontent.com/uXmuu/uXbowser-packages/main/"+a+".py"
         o = requests.get(file).text
         try:
+           
             f = open("packages/"+a+".py","w")
             f.write(o)
             f.close()
+            self.no_voi_vittu()
+            
+        
         except:
+            
             p = os.system("mkdir packages")
             if p == 0:
                 self.install(a)
@@ -204,6 +210,17 @@ class MainWindow(QMainWindow):
         else:
             self.shitscript_btn.setText("shitscript: on")
             settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+    def no_voi_vittu(self):
+        try:
+            for i in os.listdir("packages"):
+                    i = i.replace("__pycache__", "").replace(".py","")
+                    if not i in self.p_list:
+                        self.btn2 = self.ei.addAction(i)
+                        text = self.btn2.text()
+                        self.btn2.triggered.connect(lambda ch, text=text : Thread(target=lambda: self.use(text)).start())
+
+        except:
+            pass
 
 
            
