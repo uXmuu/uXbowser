@@ -187,14 +187,18 @@ class MainWindow(QMainWindow):
         self.navbar.setStyleSheet(f["navbar_style"])
 
     def reload(self):
+        #self.browser.reload()
         aaa = json.load(open("config.json"))
         self.update(aaa)
-        self.browser.reload
+        
         self.browser.page().runJavaScript(f'document.body.style.color = "{aaa["body_color"]}";')
         self.browser.page().runJavaScript(f'document.body.style.backgroundColor = "{aaa["body_background-color"]}";')
+        self.browser.page().runJavaScript('''var divs = document.getElementsByTagName("div");
+                                             for(var i = 0; i < divs.length; i++){
+                                                divs[i].style.color = "%s"
+                                                divs[i].style.backgroundColor = "%s";}''' % (aaa["body_color"],aaa["body_background-color"] ))
 
-
-    def disableJS(self, a):
+    def disableJS(self, a):             
         settings = QWebEngineSettings.globalSettings()
         o = self.shitscript_btn.text()
         if not a:
