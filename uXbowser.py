@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self.showMaximized()
         self.show()
         self.setWindowIcon(QtGui.QIcon("loko.ico"))
+        self.browser.settings().setAttribute(QWebEngineSettings.FullScreenSupportEnabled, True)
         
         self.shortcut1 = QShortcut(QKeySequence("Ctrl+R"), self)
         self.shortcut1.activated.connect(self.browser.reload)
@@ -92,6 +93,10 @@ class MainWindow(QMainWindow):
         self.url_bar = QLineEdit()
         self.url_bar.returnPressed.connect(self.navigate_to_url)
         self.navbar.addWidget(self.url_bar)
+
+        self.browser.page().fullScreenRequested.connect(self.handleFullscreenRequest)
+        QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.FullScreenSupportEnabled, True)
 
 
 
@@ -225,6 +230,18 @@ class MainWindow(QMainWindow):
 
         except:
             pass
+    def handleFullscreenRequest(self, request):
+        request.accept()
+
+        if request.toggleOn():
+            self.browser.setParent(None)
+            self.browser.showFullScreen()
+            
+        else:
+            self.setCentralWidget(self.browser)
+            self.browser.showNormal()
+            
+
 
 
            
