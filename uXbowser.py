@@ -38,27 +38,41 @@ class MainWindow(QMainWindow):
 
         
         self.browser = QWebEngineView()
-        self.browser.setUrl(QUrl(home))
+        #self.browser.setUrl(QUrl(home))
         self.setCentralWidget(self.browser)
         self.showMaximized()
         self.show()
         self.setWindowIcon(QtGui.QIcon("loko.ico"))
-        self.browser.settings().setAttribute(QWebEngineSettings.FullScreenSupportEnabled, True)
+        #self.browser.settings().setAttribute(QWebEngineSettings.FullScreenSupportEnabled, True)
+
+
+        self.tabs = QTabWidget()
+        self.tabs.setDocumentMode(True)
+        self.tabs.tabBarClicked.connect(self.tab_open_click)
+
+        
+        self.tabs.currentChanged.connect(self.tab_changed)
+        self.tabs.setTabsClosable(True)
+        self.tabs.tabCloseRequested.connect(self.close_current_tab)
+
+
+        self.setCentralWidget(self.tabs)
+
         
         self.shortcut1 = QShortcut(QKeySequence("Ctrl+R"), self)
-        self.shortcut1.activated.connect(self.browser.reload)
+        self.shortcut1.activated.connect(lambda: self.reload())
 
         self.shortcut2 = QShortcut(QKeySequence("Ctrl+S"), self)
-        self.shortcut2.activated.connect(self.browser.back)
+        self.shortcut2.activated.connect(lambda: self.tabs.currentWidget().back())
 
         self.shortcut3 = QShortcut(QKeySequence("Ctrl+F"), self)
-        self.shortcut3.activated.connect(self.browser.forward)
+        self.shortcut3.activated.connect(lambda: self.tabs.currentWidget().forward())
 
         self.shortcut4 = QShortcut(QKeySequence("Ctrl+H"), self)
         self.shortcut4.activated.connect(self.navigate_home)
 
         self.shortcut5 = QShortcut(QKeySequence("Ctrl+X"), self)
-        self.shortcut5.activated.connect(sys.exit)
+        self.shortcut5.activated.connect(exit)
 
 
 
@@ -66,11 +80,11 @@ class MainWindow(QMainWindow):
         self.addToolBar(self.navbar)
         self.navbar.setStyleSheet(a["navbar_style"])
         back_btn = QAction('selkä', self)
-        back_btn.triggered.connect(self.browser.back)
+        back_btn.triggered.connect(lambda: self.tabs.currentWidget().back())
         self.navbar.addAction(back_btn)
 
         forward_btn = QAction('vittu eteen päin', self)
-        forward_btn.triggered.connect(self.browser.forward)
+        forward_btn.triggered.connect(lambda: self.tabs.currentWidget().forward())
         self.navbar.addAction(forward_btn)
 
         reload_btn = QAction('ei vittu toimi', self)
@@ -102,7 +116,7 @@ class MainWindow(QMainWindow):
 
 
         
-        
+        self.add_tab(QUrl(home), "Homepage")
 
         
         uXbar = self.menuBar()
@@ -144,7 +158,7 @@ class MainWindow(QMainWindow):
     
 
     def navigate_home(self):
-        self.browser.setUrl(QUrl(home))
+        self.tabs.currentWidget().setUrl(QUrl(home))
 
     def navigate_to_url(self):
         url = self.url_bar.text()
@@ -195,14 +209,15 @@ class MainWindow(QMainWindow):
         #self.browser.reload()
         aaa = json.load(open("config.json"))
         self.update(aaa)
-        
-        self.browser.page().runJavaScript(f'document.body.style.color = "{aaa["body_color"]}";')
-        self.browser.page().runJavaScript(f'document.body.style.backgroundColor = "{aaa["body_background-color"]}";')
-        self.browser.page().runJavaScript('''var divs = document.getElementsByTagName("div");
-                                             for(var i = 0; i < divs.length; i++){
-                                                divs[i].style.color = "%s"
-                                                divs[i].style.backgroundColor = "%s";}''' % (aaa["body_color"],aaa["body_background-color"] ))
-
+        try:
+            self.browser.page().runJavaScript(f'document.body.style.color = "{aaa["body_color"]}";')
+            self.browser.page().runJavaScript(f'document.body.style.backgroundColor = "{aaa["body_background-color"]}";')
+            self.browser.page().runJavaScript('''var divs = document.getElementsByTagName("div");
+                                                 for(var i = 0; i < divs.length; i++){
+                                                    divs[i].style.color = "%s"
+                                                    divs[i].style.backgroundColor = "%s";}''' % (aaa["body_color"],aaa["body_background-color"] ))
+        except:
+            pass
     def disableJS(self, a):             
         settings = QWebEngineSettings.globalSettings()
         o = self.shitscript_btn.text()
@@ -234,12 +249,96 @@ class MainWindow(QMainWindow):
         request.accept()
 
         if request.toggleOn():
-            self.browser.setParent(None)
-            self.browser.showFullScreen()
+            self.tabs.setParent(None)
+            self.tabs.showFullScreen()
             
         else:
-            self.setCentralWidget(self.browser)
-            self.browser.showNormal()
+            self.setCentralWidget(self.tabs)
+            self.tabs.currentWidget().showNormal()
+
+    def add_tab(self, qurl=None, label="Blank", text="New Tab"):
+
+        if qurl is None:
+            qurl = QUrl(home)
+
+        
+        browser = QWebEngineView()
+        browser.settings().setAttribute(QWebEngineSettings.FullScreenSupportEnabled, True)
+        browser.setUrl(qurl)
+
+        
+        a = self.tabs.addTab(browser, label)
+        self.tabs.setCurrentIndex(a)
+
+        browser.urlChanged.connect(lambda qurl, browser=browser: self.reload())
+        browser.loadFinished.connect(lambda _, a=a, browser=browser: self.tabs.setTabText(a, browser.page().title()))
+        browser.page().fullScreenRequested.connect(lambda request: self.handleFullscreenRequest(request))
+
+    
+
+    def tab_open_click(self, i):
+        if i == -1:
+            self.add_tab()
+
+    
+    def tab_changed(self, i):
+        qurl = self.tabs.currentWidget().url()
+
+        
+        self.update_url_bar(qurl, self.tabs.currentWidget())
+        self.update_title(self.tabs.currentWidget())
+
+    
+    def close_current_tab(self, i):
+        if self.tabs.count() < 2:
+            return
+
+        
+        self.tabs.removeTab(i)
+
+    
+    def update_title(self, browser):
+
+        if browser != self.tabs.currentWidget():
+            return
+
+        
+        title = self.tabs.currentWidget().page().title()
+
+  
+    
+    def navigate_to_url(self):
+
+       
+        q = self.url_bar.text()
+
+
+        if self.url_bar.text().endswith("home.html"):
+            self.tabs.currentWidget().setUrl(QUrl(home))
+        elif q.startswith("http"):
+                self.tabs.currentWidget().setUrl(QUrl(q))
+        else:
+            self.tabs.currentWidget().setUrl(QUrl("https://duckduckgo.com/"+q))
+
+    
+    def update_url_bar(self, q, browser=None):
+
+
+        if browser != self.tabs.currentWidget():
+
+            return
+
+        
+        self.url_bar.setText(q.toString())
+
+        
+        self.url_bar.setCursorPosition(0)
+
+        """def _downloadRequested(item):  
+            print("downloading to", item.path())
+            item.accept()
+
+        browser.page().profile().downloadRequested.connect(_downloadRequested)"""
             
 
 
@@ -257,20 +356,11 @@ if "__main__" == __name__:
         
         QApplication.setApplicationName('uXbowser')
         window = MainWindow()
+        app.exec_()
     except Exception as e:
         print(e)
-        app.exec_()
-        
-        try:
-            app = QApplication(sys.argv)
-            app.setStyleSheet(a["app_style"])
-
-                
-            QApplication.setApplicationName('uXbowser')
-            window = MainWindow()
-        except:
-            pass
-    app.exec_()
+       
+    
 
 
 
