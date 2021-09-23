@@ -31,6 +31,8 @@ class MainWindow(QMainWindow):
         with open("config.json") as f:
             a = json.load(f)
             f.close()
+
+
         
         packages = requests.get("""https://raw.githubusercontent.com/uXmuu/uXbowser-packages/main/a.txt""").text
         default_config = requests.get("https://raw.githubusercontent.com/uXmuu/uXbowser-packages/main/config/config.json").json()
@@ -103,6 +105,10 @@ class MainWindow(QMainWindow):
         self.shitscript_btn.triggered.connect(lambda: self.disableJS(False))
         self.navbar.addAction(self.shitscript_btn)
 
+        self.tor_btn = QAction("tor: off",self)
+        self.tor_btn.triggered.connect(lambda: self.proxy("socks4","127.0.0.1",9050))
+        self.navbar.addAction(self.tor_btn)
+
 
         self.url_bar = QLineEdit()
         self.url_bar.returnPressed.connect(self.navigate_to_url)
@@ -146,6 +152,10 @@ class MainWindow(QMainWindow):
         
         #self.setStyleSheet(f["app_style"])
 
+
+
+        
+
     def use(self,a):
         sys.path.insert(1,"packages")
         #a = __import__(a)
@@ -153,9 +163,24 @@ class MainWindow(QMainWindow):
 
             
         #self.browser.page().runJavaScript(f'document.body.style.color = "white"; document.body.style.color = "yellow"; document.body.style.backgroundColor = "red";')
-                    
-        
     
+
+    
+
+    def proxy(self, type, ip, port):
+        try:
+            if type == "socks4" or type == "socks5":
+                self.proxyIP = ip  
+                self.proxyPORT = port
+                proxy = QNetworkProxy()  
+                proxy.setType(QNetworkProxy.Socks5Proxy)  
+                proxy.setHostName(self.proxyIP)  
+                proxy.setPort(self.proxyPORT)  
+                QNetworkProxy.setApplicationProxy(proxy)
+                self.tor_btn.setText("tor: on")
+        except:
+            pass
+        
 
     def navigate_home(self):
         self.tabs.currentWidget().setUrl(QUrl(home))
